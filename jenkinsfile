@@ -37,5 +37,12 @@ stage('Trivy Scan') {
         '''
     }
 }
+stage(' see dashboard scan') {
+            steps {
+            sh ' trivy image --format json --output result.json --severity HIGH,CRITICAL shitesh3796/pythonimage
+				archiveArtifacts artifacts: 'result.json', followSymlinks: false
+            }
+        }
+
 }
 }
