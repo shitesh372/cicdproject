@@ -19,6 +19,7 @@ stages {
                 git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
             }
         } 
+}
 stage('creating package') {
             steps {
            sh 'mvn clean package'
