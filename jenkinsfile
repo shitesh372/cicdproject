@@ -30,5 +30,12 @@ sudo apt-get update
 sudo apt-get install trivy'''
             }
         }
+stage('Trivy Scan') {
+    steps {
+        sh '''
+            trivy image shitesh3796/pythonimage
+        '''
+    }
+}
 }
 }
