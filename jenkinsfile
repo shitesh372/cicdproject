@@ -1,6 +1,7 @@
 pipeline {
     agent any
-    stages {
+   
+stages {
         stage('clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
