@@ -34,12 +34,20 @@ docker push shitesh3796/pythonimage'''
             }
         }
 stage('Analyzing Code Quality') {
-steps {
-// Step to analyze code quality with SonarQube
-sh '/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=shitesh_myproject -Dsonar.organization=shitesh -Dsonar.qualitygate.wait=false -Dsonar.qualitygate.timeout=300 -Dsonar.sources=src/main/java/ -Dsonar.java.binaries=target/classes -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=e0296cf069ca16170ea1f02c1f806b88f5cf8f14'
+    steps {
+        sh '''
+            /opt/sonar-scanner/bin/sonar-scanner \
+            -Dsonar.projectKey=shitesh_myproject \
+            -Dsonar.organization=shitesh \
+            -Dsonar.qualitygate.wait=false \
+            -Dsonar.qualitygate.timeout=300 \
+            -Dsonar.sources=src/main/java/ \
+            -Dsonar.java.binaries=target/classes \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=e0296cf069ca16170ea1f02c1f806b88f5cf8f14
+        '''
+    }
 }
-}
-
 stage('install trivy') {
             steps {
                sh '''sudo apt-get install wget gnupg
