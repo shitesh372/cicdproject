@@ -7,8 +7,6 @@ stages {
                 git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
             }
         } 
-}
-}
 stage('build') {
             steps {
                 sh 'docker build -t shitesh3796/pythonimage -f dockerfile .'
