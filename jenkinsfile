@@ -1,49 +1,62 @@
 pipeline {
     agent any
 
-stages {
-        stage('Install maven') {
-            steps {
-               sh 'sudo apt  install maven -y'
-            }
-        }
-         stage('Install jdk') {
-            steps {
-               sh 'sudo apt install openjdk-21-jdk  -y'
-            }
-        }
-}
     stages {
-        stage('clone') {
+
+        stage('Install Maven') {
             steps {
-                git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
-            }
-        } 
-stage('creating package') {
-            steps {
-           sh 'mvn clean package'
-            }
-        }
-        stage('Release/Achriving Artifact') {
-            steps {
-           archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
+                sh 'sudo apt update && sudo apt install maven -y'
             }
         }
 
- stage('build') {
+        stage('Install JDK') {
+            steps {
+                sh 'sudo apt install openjdk-21-jdk -y'
+            }
+        }
+
+        stage('Clone') {
+            steps {
+                git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
+            }
+        }
+
+        stage('Creating Package') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Release/Archiving Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 sh 'docker build -t shitesh3796/pythonimage -f dockerfile .'
             }
         }
-stage('push') {
+
+        stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'mytoken', passwordVariable: 'password', usernameVariable: 'username')]) {
-  sh '''echo $password | docker login -u $username --password-stdin
-docker push shitesh3796/pythonimage'''  
-}
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'mytoken',
+                        usernameVariable: 'username',
+                        passwordVariable: 'password'
+                    )
+                ]) {
+                    sh '''
+                        echo $password | docker login -u $username --password-stdin
+                        docker push shitesh3796/pythonimage
+                    '''
+                }
+            }
         }
-}
- stage('Install SonarQube CLI') {
+
+        stage('Install SonarQube CLI') {
             steps {
                 sh '''
                     sudo apt update -y
@@ -55,45 +68,50 @@ docker push shitesh3796/pythonimage'''
                 '''
             }
         }
-stage('Analyzing Code Quality') {
-    steps {
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            sh '''
-                /opt/sonar-scanner/bin/sonar-scanner \
-                -Dsonar.projectKey=shitesh_myproject \
-                -Dsonar.organization=shitesh \
-                -Dsonar.qualitygate.wait=false \
-                -Dsonar.qualitygate.timeout=300 \
-                -Dsonar.sources=src/main/java/ \
-                -Dsonar.java.binaries=target/classes \
-                -Dsonar.host.url=https://sonarcloud.io \
-                -Dsonar.login=$SONAR_TOKEN
-            '''
-        }
-    }
-}
-stage('install trivy') {
-            steps {
-               sh '''sudo apt-get install wget gnupg
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy'''
-            }
-        }
-stage('Trivy Scan') {
-    steps {
-        sh '''
-            trivy image shitesh3796/pythonimage
-        '''
-    }
-}
-stage(' see dashboard scan') {
-            steps {
-            sh ' trivy image --format json --output result.json --severity HIGH,CRITICAL shitesh3796/pythonimage'
-				archiveArtifacts artifacts: 'result.json', followSymlinks: false
-            }
-        }
-}
-}
 
+        stage('Analyzing Code Quality') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        /opt/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=shitesh_myproject \
+                        -Dsonar.organization=shitesh \
+                        -Dsonar.qualitygate.wait=false \
+                        -Dsonar.qualitygate.timeout=300 \
+                        -Dsonar.sources=src/main/java/ \
+                        -Dsonar.java.binaries=target/classes \
+                        -Dsonar.host.url=https://sonarcloud.io \
+                        -Dsonar.login=$SONAR_TOKEN
+                    '''
+                }
+            }
+        }
+
+        stage('Install Trivy') {
+            steps {
+                sh '''
+                    sudo apt-get install wget gnupg -y
+                    wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+                    echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | sudo tee /etc/apt/sources.list.d/trivy.list
+                    sudo apt-get update
+                    sudo apt-get install trivy -y
+                '''
+            }
+        }
+
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image shitesh3796/pythonimage'
+            }
+        }
+
+        stage('See Dashboard Scan') {
+            steps {
+                sh '''
+                    trivy image --format json --output result.json --severity HIGH,CRITICAL shitesh3796/pythonimage
+                '''
+                archiveArtifacts artifacts: 'result.json', followSymlinks: false
+            }
+        }
+    }
+}
