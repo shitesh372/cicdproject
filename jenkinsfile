@@ -2,28 +2,6 @@ pipeline {
     agent any
 
 stages {
-        stage('Install maven') {
-            steps {
-               sh 'sudo apt  install maven -y'
-            }
-        }
-         stage('Install jdk') {
-            steps {
-               sh 'sudo apt install openjdk-21-jdk  -y'
-            }
-        }
-stage('creating package') {
-            steps {
-           sh 'mvn clean package'
-            }
-        }
-        stage('Release/Achriving Artifact') {
-            steps {
-           archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
-            }
-        }
-
-stages {
         stage('clone') {
             steps {
                 git branch: 'main', url: 'https://github.com/shitesh372/cicdproject.git'
