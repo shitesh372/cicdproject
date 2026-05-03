@@ -13,5 +13,11 @@ pipeline {
                 sh 'docker build -t shitesh3796/pythonimage -f dockerfile .'
             }
         }
+stage('push') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'mytoken', passwordVariable: 'password', usernameVariable: 'username')]) {
+  sh 'echo $password | docker push shitesh3796/pythonimage -u $username --password-stdin'  
+}
+        }
 }
 }
