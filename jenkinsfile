@@ -20,6 +20,7 @@ stage('push') {
 docker push shitesh3796/pythonimage'''  
 }
         }
+}
 stage('install trivy') {
             steps {
                sh '''sudo apt-get install wget gnupg
@@ -29,6 +30,5 @@ sudo apt-get update
 sudo apt-get install trivy'''
             }
         }
-}
 }
 }
