@@ -21,6 +21,25 @@ docker push shitesh3796/pythonimage'''
 }
         }
 }
+ stage('Install SonarQube CLI') {
+            steps {
+                sh '''
+                    sudo apt update -y
+                    sudo apt install unzip wget -y
+                    wget -O sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                    unzip -o -q sonar-scanner.zip
+                    sudo rm -rf /opt/sonar-scanner
+                    sudo mv --force sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+                '''
+            }
+        }
+stage('Analyzing Code Quality') {
+steps {
+// Step to analyze code quality with SonarQube
+sh '/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=shitesh_myproject -Dsonar.organization=shitesh -Dsonar.qualitygate.wait=false -Dsonar.qualitygate.timeout=300 -Dsonar.sources=src/main/java/ -Dsonar.java.binaries=target/classes -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=e0296cf069ca16170ea1f02c1f806b88f5cf8f14'
+}
+}
+
 stage('install trivy') {
             steps {
                sh '''sudo apt-get install wget gnupg
@@ -41,18 +60,6 @@ stage(' see dashboard scan') {
             steps {
             sh ' trivy image --format json --output result.json --severity HIGH,CRITICAL shitesh3796/pythonimage'
 				archiveArtifacts artifacts: 'result.json', followSymlinks: false
-            }
-        }
- stage('Install SonarQube CLI') {
-            steps {
-                sh '''
-                    sudo apt update -y
-                    sudo apt install unzip wget -y
-                    wget -O sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-                    unzip -o -q sonar-scanner.zip
-                    sudo rm -rf /opt/sonar-scanner
-                    sudo mv --force sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
-                '''
             }
         }
 }
