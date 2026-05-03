@@ -71,5 +71,6 @@ stage(' see dashboard scan') {
 				archiveArtifacts artifacts: 'result.json', followSymlinks: false
             }
         }
-
+}
+}
 
